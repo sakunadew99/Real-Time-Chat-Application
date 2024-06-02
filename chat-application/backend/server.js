@@ -18,8 +18,9 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://real-time-chat-application-frontend-six.vercel.app/",
+    origin: "https://real-time-chat-application-frontend-six.vercel.app",
     methods: ["GET", "POST"],
+    credentials: true
   },
 });
 
