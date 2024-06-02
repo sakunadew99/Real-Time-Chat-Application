@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const User = require("./models/User");
 const Message = require("./models/Message");
 
+
 app.use(cors());
 app.use(express.json()); // To parse JSON bodies
 
@@ -60,11 +61,16 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send_message", async (data) => {
-    const message = new Message(data);
+    const messageData = {
+      ...data,
+      date: new Date().toISOString().split('T')[0] // Add the current date
+    };
+    const message = new Message(messageData);
     await message.save();
-
-    socket.to(data.room).emit("receive_message", data);
+  
+    socket.to(data.room).emit("receive_message", messageData);
   });
+  
 
   socket.on("disconnect", () => {
     console.log("User Disconnected", socket.id);
