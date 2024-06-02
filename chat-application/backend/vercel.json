@@ -1,9 +1,19 @@
 {
-    "version": 2,
-    "builds": [
-        { "src": "*.js", "use": "@vercel/node" }
-    ],
-    "routes": [
-        { "src": "/(.*)", "dest": "/" }
-    ]
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js", // Change the source file to your main server file
+      "use": "@vercel/node-server"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/messages", // Example of a custom route
+      "dest": "/server.js" // Point to your main server file where the route is handled
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/" // Default route for your main application
+    }
+  ]
 }
