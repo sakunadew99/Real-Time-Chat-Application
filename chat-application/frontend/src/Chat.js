@@ -2,12 +2,10 @@ import React, { useEffect, useState } from "react";
 import ScrollToBottom from "react-scroll-to-bottom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axios from "axios";
 
 function Chat({ socket, username, room, onLogout }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
-  const [selectedImage, setSelectedImage] = useState(null);
   const [activeUsers, setActiveUsers] = useState([]);
 
   const colors = ["#7289da", "#424549", "#99aab5", "#7da565", "#7e61ab"];
@@ -26,29 +24,19 @@ function Chat({ socket, username, room, onLogout }) {
     return `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
   };
 
-  const sendMessage = async () => {
-    if (currentMessage !== "" || selectedImage) {
-      let imageUrl = null;
-      if (selectedImage) {
-        const formData = new FormData();
-        formData.append("image", selectedImage);
-        try {
-          const response = await axios.post("http://localhost:3001/upload", formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
-          imageUrl = response.data.imageUrl;
-        } catch (error) {
-          console.error("Error uploading image", error);
-        }
-        setSelectedImage(null);
-      }
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
+  const sendMessage = async () => {
+    if (currentMessage !== "") {
       const messageData = {
         room: room,
         author: username,
         message: currentMessage,
-        image: imageUrl,
         time: formatTime(new Date(Date.now())),
+        date: new Date().toISOString().split('T')[0] // Add the current date
       };
 
       await socket.emit("send_message", messageData);
@@ -91,7 +79,34 @@ function Chat({ socket, username, room, onLogout }) {
       socket.off("user_joined");
       socket.off("user_left");
     };
-  }, [socket, username]);
+  }, [socket, username, room]);
+
+  const renderMessages = () => {
+    let lastDate = null;
+
+    return messageList.map((messageContent, index) => {
+      const messageDate = formatDate(messageContent.date);
+      const showDate = lastDate !== messageDate;
+      lastDate = messageDate;
+
+      return (
+        <React.Fragment key={index}>
+          {showDate && <div className="date-divider">{messageDate}</div>}
+          <div className="message" id={username === messageContent.author ? "you" : "other"}>
+            <div>
+              <div className="message-content" style={{ backgroundColor: getColor(messageContent.author) }}>
+                <p>{messageContent.message}</p>
+              </div>
+              <div className="message-meta">
+                <p id="time">{messageContent.time}</p>
+                <p id="author">{username === messageContent.author ? "you" : messageContent.author}</p>
+              </div>
+            </div>
+          </div>
+        </React.Fragment>
+      );
+    });
+  };
 
   return (
     <div className="chat-window">
@@ -114,33 +129,7 @@ function Chat({ socket, username, room, onLogout }) {
       </div>
       <div className="chat-body">
         <ScrollToBottom className="message-container">
-          {messageList.map((messageContent, index) => {
-            return (
-              <div
-                className="message"
-                id={username === messageContent.author ? "you" : "other"}
-                key={index}
-              >
-                <div>
-                  <div
-                    className="message-content"
-                    style={{ backgroundColor: getColor(messageContent.author) }}
-                  >
-                    {messageContent.message && <p>{messageContent.message}</p>}
-                    {messageContent.image && (
-                      <img src={messageContent.image} alt="sent image" style={{ maxWidth: "100%" }} />
-                    )}
-                  </div>
-                  <div className="message-meta">
-                    <p id="time">{messageContent.time}</p>
-                    <p id="author">
-                      {username === messageContent.author ? "you" : messageContent.author}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {renderMessages()}
         </ScrollToBottom>
       </div>
       <div className="chat-footer">
@@ -155,15 +144,6 @@ function Chat({ socket, username, room, onLogout }) {
             event.key === "Enter" && sendMessage();
           }}
         />
-        <input
-          type="file"
-          onChange={(event) => setSelectedImage(event.target.files[0])}
-          style={{ display: "none" }}
-          id="image-upload"
-        />
-        <label htmlFor="image-upload">
-          <button>&#128247;</button>
-        </label>
         <button onClick={sendMessage}>&#9658;</button>
       </div>
     </div>
