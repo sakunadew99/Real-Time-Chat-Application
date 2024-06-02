@@ -4,11 +4,6 @@ import { useState, useEffect } from "react";
 import Chat from "./Chat";
 
 const socket = io.connect("https://real-time-chat-application-backend-eight.vercel.app", {
-  transports: ['websocket', 'polling'], // Define transports for compatibility
-  secure: true,
-  reconnection: true,
-  reconnectionAttempts: 10,
-  reconnectionDelay: 1000
 });
 
 function App() {
