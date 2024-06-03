@@ -8,6 +8,8 @@ const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const User = require("./models/User");
 const Message = require("./models/Message");
+const multer = require("multer");
+const { v4: uuidv4 } = require("uuid");
 const path = require("path");
 
 app.use(cors());
@@ -124,6 +126,8 @@ io.on("connection", (socket) => {
     }
   });
 });
+
+
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {

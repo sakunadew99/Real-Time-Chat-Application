@@ -279,6 +279,12 @@ body {
   color: #888;
 }
 
+.message-image {
+  max-width: 200px;
+  max-height: 200px;
+  cursor: pointer;
+}
+
 
 
 /* Mobile Responsive Styles */

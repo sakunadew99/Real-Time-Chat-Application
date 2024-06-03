@@ -25,6 +25,7 @@ Setup Instructions
      FRONTEND_URL=http://localhost:3000
 
 4. **Run the Application**:
+
    - To start the backend server, navigate to the 'backend' directory and run:
 
      nodemon server.js
@@ -43,7 +44,7 @@ The backend uses Express for the server, Socket.IO for real-time communication, 
 
 Frontend:
 The frontend is built with React.
-The main dependencies include 'react', 'axios' for HTTP requests, 'socket.io-client' for real-time communication, and various libraries for UI and state management.
+The main dependencies include 'react', 'socket.io-client' for real-time communication, and various libraries for UI and state management.
 
 Assumptions and Limitations
 

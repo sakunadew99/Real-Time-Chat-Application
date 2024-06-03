@@ -3,10 +3,13 @@ import ScrollToBottom from "react-scroll-to-bottom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+
 function Chat({ socket, username, room, onLogout }) {
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
   const [activeUsers, setActiveUsers] = useState([]);
+  
+
 
   const colors = [
     "#7289da", "#424549", "#99aab5", "#7da565", "#7e61ab", "#ff5733","#33ff57","#3357ff",
