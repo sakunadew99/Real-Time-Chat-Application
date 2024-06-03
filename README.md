@@ -19,9 +19,9 @@ Setup Instructions
 
    - Create a '.env' file in the 'backend' directory and add the following environment variables:
 
-     MONGODB_URI=your_mongodb_uri
-     NODE_ENV= production
-     PORT=3001
+     MONGODB_URI=your_mongodb_uri,
+     NODE_ENV= production,
+     PORT=3001,
      FRONTEND_URL=http://localhost:3000
 
 4. **Run the Application**:
