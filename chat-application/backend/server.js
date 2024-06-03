@@ -1,3 +1,5 @@
+require('dotenv').config(); // Load environment variables from .env file
+
 const express = require("express");
 const app = express();
 const http = require("http");
@@ -7,12 +9,13 @@ const mongoose = require("mongoose");
 const User = require("./models/User");
 const Message = require("./models/Message");
 
-
 app.use(cors());
 app.use(express.json()); // To parse JSON bodies
 
-// Connect to MongoDB
-mongoose.connect('mongodb+srv://root:root@books-store-mern.pl4k5pa.mongodb.net/chat-coll?retryWrites=true&w=majority&appName=Books-Store-MERN', {});
+// Connect to MongoDB with error handling
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("MongoDB connected"))
+  .catch((error) => console.error("MongoDB connection error:", error));
 
 const server = http.createServer(app);
 
@@ -30,48 +33,55 @@ io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
   socket.on("join_room", async (data) => {
-    const { username, room } = data;
-    socket.join(room);
-    socket.username = username; 
-    console.log(`User with ID: ${socket.id} joined room: ${room}`);
+    try {
+      const { username, room } = data;
+      socket.join(room);
+      socket.username = username; 
+      console.log(`User with ID: ${socket.id} joined room: ${room}`);
 
-    // Add user to users object
-    if (!users[room]) {
-      users[room] = [];
+      // Add user to users object
+      if (!users[room]) {
+        users[room] = [];
+      }
+      if (!users[room].includes(username)) {
+        users[room].push(username);
+      }
+
+      // Notify others in the room
+      socket.to(room).emit("user_joined", username);
+
+      // Notify all clients in the room of the current active users
+      io.in(room).emit("active_users", users[room]);
+
+      // Save user and room info to database
+      await User.findOneAndUpdate(
+        { username },
+        { $addToSet: { rooms: room } },
+        { upsert: true, new: true }
+      );
+
+      // Fetch previous messages for the room
+      const messages = await Message.find({ room }).sort({ _id: 1 }).exec();
+      socket.emit("previous_messages", messages);
+    } catch (error) {
+      console.error("Error in join_room event:", error);
     }
-    if (!users[room].includes(username)) {
-      users[room].push(username);
-    }
-
-    // Notify others in the room
-    socket.to(room).emit("user_joined", username);
-
-    // Notify all clients in the room of the current active users
-    io.in(room).emit("active_users", users[room]);
-
-    // Save user and room info to database
-    const user = await User.findOneAndUpdate(
-      { username },
-      { $addToSet: { rooms: room } },
-      { upsert: true, new: true }
-    );
-
-    // Fetch previous messages for the room
-    const messages = await Message.find({ room }).sort({ _id: 1 }).exec();
-    socket.emit("previous_messages", messages);
   });
 
   socket.on("send_message", async (data) => {
-    const messageData = {
-      ...data,
-      date: new Date().toISOString().split('T')[0] // Add the current date
-    };
-    const message = new Message(messageData);
-    await message.save();
-  
-    socket.to(data.room).emit("receive_message", messageData);
+    try {
+      const messageData = {
+        ...data,
+        date: new Date().toISOString().split('T')[0] // Add the current date
+      };
+      const message = new Message(messageData);
+      await message.save();
+    
+      socket.to(data.room).emit("receive_message", messageData);
+    } catch (error) {
+      console.error("Error in send_message event:", error);
+    }
   });
-  
 
   socket.on("disconnect", () => {
     console.log("User Disconnected", socket.id);
@@ -97,6 +107,7 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3001, () => {
-  console.log("SERVER RUNNING");
+const PORT = process.env.PORT || 3001;
+server.listen(PORT, () => {
+  console.log(`SERVER RUNNING on port ${PORT}`);
 });
