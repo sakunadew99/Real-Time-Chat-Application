@@ -29,7 +29,6 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// --------------------------deployment------------------------------
 
 // Connect to MongoDB with error handling
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })

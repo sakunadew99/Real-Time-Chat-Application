@@ -8,7 +8,12 @@ function Chat({ socket, username, room, onLogout }) {
   const [messageList, setMessageList] = useState([]);
   const [activeUsers, setActiveUsers] = useState([]);
 
-  const colors = ["#7289da", "#424549", "#99aab5", "#7da565", "#7e61ab"];
+  const colors = [
+    "#7289da", "#424549", "#99aab5", "#7da565", "#7e61ab", "#ff5733","#33ff57","#3357ff",
+    "#f39c12","#8e44ad", "#e74c3c", "#2ecc71",  "#1abc9c", "#3498db",
+    "#9b59b6","#e67e22",   "#ecf0f1", "#95a5a6", "#34495e", "#7f8c8d", 
+  ];
+  
   const userColors = {};
 
   const getColor = (user) => {
